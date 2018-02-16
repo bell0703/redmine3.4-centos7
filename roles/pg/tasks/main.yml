@@ -32,6 +32,23 @@
   when:
     result_pg_hba.rc == 1
 
+- name: postgresユーザー変更スクリプトを配置
+  become: yes
+  copy:
+    src=change_postgres.sh
+    dest=/home/tetuya/
+    mode=755
+  when:
+    result_pg_hba.rc == 1
+
+- name: postgresユーザー変更パッチを配置
+  become: yes
+  copy:
+    src=pam_su.patch
+    dest={{ work_dir }}
+  when:
+    result_pg_hba.rc == 1
+
 - name: pg_hba.confにredmine用設定を追加
   become: yes
   shell:
@@ -45,6 +62,13 @@
     patch -tNp0 {{ postgresql_conf_path }} < {{ work_dir }}/postgres.conf.patch
   when:
     result_pg_hba.rc == 1
+  
+- name: pamのsuにパッチ適用
+  become: yes
+  shell:
+    patch -tNp0 {{ pam_su }} < {{ work_dir }}/pam_su.patch
+  when:
+    result_pg_hba.rc == 1
 
 - name: PostgreSQL起動
   become: yes
@@ -53,11 +77,11 @@
     state=restarted
     enabled=yes
 
-- name: postgres　ユーザーのpassword設定
-  become: yes
-  user:
-    name: "postgres"
-    password: "{{ 'abc123'|password_hash('sha512') }}"
+#- name: postgres　ユーザーのpassword設定
+#  become: yes
+#  user:
+#    name: "postgres"
+#    password: "{{ 'abc123'|password_hash('sha512') }}"
 
 - name: PostgreSQL ユーザー作成
   become: yes

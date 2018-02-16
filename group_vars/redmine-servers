@@ -22,6 +22,9 @@ pg_hba_conf_path: /var/lib/pgsql/data/pg_hba.conf
 # postgres_conf_path
 postgresql_conf_path: /var/lib/pgsql/data/postgresql.conf
 
+# pam_su
+pam_su: /etc/pam.d/su
+
 # ダウンロードするRubyのソースコード
 ruby_url_dir: https://cache.ruby-lang.org/pub/ruby/2.4
 ruby_archive_version: ruby-2.4.1
