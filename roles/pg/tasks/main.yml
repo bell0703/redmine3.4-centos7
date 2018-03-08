@@ -1,5 +1,25 @@
+- name: postgresユーザー変更スクリプトを配置
+  become: yes
+  copy:
+    src=change_postgres.sh
+    dest=/home/tetuya/
+    mode=755
+
+- name: postgresユーザー変更パッチを配置
+  become: yes
+  copy:
+    src=pam_su.patch
+    dest={{ work_dir }}
+
+- name: pamのsuにパッチ適用
+  become: yes
+  shell:
+    patch -tNp0 {{ pam_su }} < {{ work_dir }}/pam_su.patch
+
 - name: PostgreSQL initdb
   become: yes
+  become_user: postgres
+  become_method: su
   command:
     postgresql-setup initdb
   register:
@@ -32,22 +52,22 @@
   when:
     result_pg_hba.rc == 1
 
-- name: postgresユーザー変更スクリプトを配置
-  become: yes
-  copy:
-    src=change_postgres.sh
-    dest=/home/tetuya/
-    mode=755
-  when:
-    result_pg_hba.rc == 1
-
-- name: postgresユーザー変更パッチを配置
-  become: yes
-  copy:
-    src=pam_su.patch
-    dest={{ work_dir }}
-  when:
-    result_pg_hba.rc == 1
+#- name: postgresユーザー変更スクリプトを配置
+#  become: yes
+#  copy:
+#    src=change_postgres.sh
+#    dest=/home/tetuya/
+#    mode=755
+#  when:
+#    result_pg_hba.rc == 1
+#
+#- name: postgresユーザー変更パッチを配置
+#  become: yes
+#  copy:
+#    src=pam_su.patch
+#    dest={{ work_dir }}
+#  when:
+#    result_pg_hba.rc == 1
 
 - name: pg_hba.confにredmine用設定を追加
   become: yes
@@ -63,12 +83,12 @@
   when:
     result_pg_hba.rc == 1
   
-- name: pamのsuにパッチ適用
-  become: yes
-  shell:
-    patch -tNp0 {{ pam_su }} < {{ work_dir }}/pam_su.patch
-  when:
-    result_pg_hba.rc == 1
+#- name: pamのsuにパッチ適用
+#  become: yes
+#  shell:
+#    patch -tNp0 {{ pam_su }} < {{ work_dir }}/pam_su.patch
+#  when:
+#    result_pg_hba.rc == 1
 
 - name: PostgreSQL起動
   become: yes
